@@ -15,14 +15,12 @@ them directly to `GarrysMod/garrysmod/addons`.
 - Automatically selects the initial language from the Windows display language
 - Runtime language switching
 - Remembers the selected language for the next launch
-- Bilibili author link and GitHub Star button
 - Custom in-app responsible-use notice
 - PNG, GIF, JPG/JPEG, BMP, and TIF/TIFF input
 - Preserves GIF animation frames and timing
 - Fit-entire-image and fill/crop modes
 - MP3/WAV chase, death, and jump audio
 - Custom NPC spawn-menu categories
-- Generates Lua, spawn icon, `addon.json`, and addon instructions
 - Self-contained Windows x64 build
 
 ## Requirements
@@ -34,7 +32,6 @@ them directly to `GarrysMod/garrysmod/addons`.
 
 ```text
 NextbotImporter/        Application and addon generation code
-NextbotImporter.Tests/  End-to-end addon generation test
 iconimage.ico           Application icon
 ```
 
