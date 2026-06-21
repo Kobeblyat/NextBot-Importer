@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>..\iconimage.ico</ApplicationIcon>
+    <AssemblyName>Garry's Mod游戏NextBot导入器--Kobeblyat制作</AssemblyName>
+    <RootNamespace>NextbotImporter</RootNamespace>
+    <Version>1.5.0</Version>
+    <Authors>Kobeblyat</Authors>
+    <Product>Garry's Mod游戏NextBot导入器--Kobeblyat制作</Product>
+    <Title>Garry's Mod游戏NextBot导入器--Kobeblyat制作</Title>
+    <AssemblyTitle>Garry's Mod游戏NextBot导入器--Kobeblyat制作</AssemblyTitle>
+    <Company>Kobeblyat</Company>
+    <Description>由B站UP主Kobeblyat制作的 Garry's Mod NextBot addon 导入器</Description>
+  </PropertyGroup>
+</Project>
