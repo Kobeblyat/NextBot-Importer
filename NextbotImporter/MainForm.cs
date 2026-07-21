@@ -33,6 +33,7 @@ internal sealed class MainForm : Form
     };
     private readonly CheckBox _adminOnly = Check("仅管理员可生成", false);
     private readonly CheckBox _smashProps = Check("可以撞开物理道具", true);
+    private readonly CheckBox _disableJumping = Check("禁用跳跃", false);
     private readonly PictureBox _preview = new()
     {
         SizeMode = PictureBoxSizeMode.Zoom,
@@ -209,6 +210,7 @@ internal sealed class MainForm : Form
         var checks = new FlowLayoutPanel { Dock = DockStyle.Fill, Height = 34, Padding = new Padding(0, 5, 0, 0) };
         checks.Controls.Add(_adminOnly);
         checks.Controls.Add(_smashProps);
+        checks.Controls.Add(_disableJumping);
         WideField(form, ref row, "行为选项", checks);
 
         Section(form, ref row, "04  导出");
@@ -437,7 +439,7 @@ internal sealed class MainForm : Form
                 (int)_damage.Value, (int)_attackDistance.Value,
                 SelectedFitMode(),
                 false,
-                _adminOnly.Checked, _smashProps.Checked);
+                _adminOnly.Checked, _smashProps.Checked, _disableJumping.Checked);
 
             var progress = new Progress<string>(message => _status.Text = message);
             BuildResult result = await Task.Run(() => AddonBuilder.Build(options, progress));
