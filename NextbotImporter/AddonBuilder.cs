@@ -28,7 +28,8 @@ internal sealed record NextbotOptions(
     ImageFitMode ImageFit,
     bool English,
     bool AdminOnly,
-    bool SmashProps);
+    bool SmashProps,
+    bool DisableJumping);
 
 internal sealed record BuildResult(string AddonPath, int FrameCount);
 
@@ -293,7 +294,7 @@ if SERVER then
         self.loco:SetDesiredSpeed(cvSpeed:GetFloat())
         self.loco:SetAcceleration(1200)
         self.loco:SetDeceleration(800)
-        self.loco:SetJumpHeight(300)
+{{(o.DisableJumping ? "        self.loco:SetJumpHeight(0)" : "        self.loco:SetJumpHeight(300)")}}
         self.NextAttack = 0
         self.NextMusicUpdate = 0
     end
@@ -386,6 +387,7 @@ if SERVER then
                             return
                         end
 
+{{(o.DisableJumping ? "" : """
                         if target:GetPos().z - self:GetPos().z > 60 and self:IsOnGround() then
                             self.loco:Jump()
                             if JUMP_SOUND then
@@ -395,6 +397,7 @@ if SERVER then
                                 net.Broadcast()
                             end
                         end
+""")}}
 
                         if path:GetAge() > 0.12 then path:Compute(self, target:GetPos()) end
                         coroutine.yield()
