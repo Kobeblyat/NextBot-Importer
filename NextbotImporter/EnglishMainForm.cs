@@ -33,6 +33,7 @@ internal sealed class EnglishMainForm : Form
     };
     private readonly CheckBox _adminOnly = Check("Admin-only spawning", false);
     private readonly CheckBox _smashProps = Check("Smash physics props", true);
+    private readonly CheckBox _disableJumping = Check("Disable jumping", false);
     private readonly PictureBox _preview = new()
     {
         SizeMode = PictureBoxSizeMode.Zoom,
@@ -189,6 +190,7 @@ internal sealed class EnglishMainForm : Form
         var checks = new FlowLayoutPanel { Dock = DockStyle.Fill, Height = 34, Padding = new Padding(0, 5, 0, 0) };
         checks.Controls.Add(_adminOnly);
         checks.Controls.Add(_smashProps);
+        checks.Controls.Add(_disableJumping);
         WideField(form, ref row, "Behavior", checks);
         Section(form, ref row, "04  Export");
         var browse = SecondaryButton("Browse…");
@@ -351,7 +353,7 @@ internal sealed class EnglishMainForm : Form
                 _output.Text.Trim(), (int)_speed.Value, (int)_size.Value,
                 (int)_damage.Value, (int)_attackDistance.Value, SelectedFitMode(),
                 true,
-                _adminOnly.Checked, _smashProps.Checked);
+                _adminOnly.Checked, _smashProps.Checked, _disableJumping.Checked);
             var progress = new Progress<string>(message => _status.Text = message);
             BuildResult result = await Task.Run(() => AddonBuilder.Build(options, progress));
             _status.Text = $"Export complete · {result.AddonPath}";
