@@ -25,6 +25,7 @@ internal sealed class EnglishMainForm : Form
     private readonly NumericUpDown _size = NumberBox(32, 1024, 128, 8);
     private readonly NumericUpDown _damage = NumberBox(1, 1_000_000, 1_000_000, 10);
     private readonly NumericUpDown _attackDistance = NumberBox(20, 500, 80, 5);
+    private readonly NumericUpDown _jumpHeight = NumberBox(0, 2000, 800, 10);
     private readonly ComboBox _imageFit = new()
     {
         DropDownStyle = ComboBoxStyle.DropDownList,
@@ -187,6 +188,8 @@ internal sealed class EnglishMainForm : Form
         Field(form, row++, 2, "Sprite size", _size);
         Field(form, row, 0, "Attack damage", _damage);
         Field(form, row++, 2, "Attack range", _attackDistance);
+        Field(form, row, 0, "Jump height", _jumpHeight);
+        row++;
         var checks = new FlowLayoutPanel { Dock = DockStyle.Fill, Height = 34, Padding = new Padding(0, 5, 0, 0) };
         checks.Controls.Add(_adminOnly);
         checks.Controls.Add(_smashProps);
@@ -351,7 +354,7 @@ internal sealed class EnglishMainForm : Form
                 _name.Text.Trim(), _id.Text.Trim(), _category.Text.Trim(),
                 _image.Value, _chase.Value, _kill.Value, _jump.Value,
                 _output.Text.Trim(), (int)_speed.Value, (int)_size.Value,
-                (int)_damage.Value, (int)_attackDistance.Value, SelectedFitMode(),
+                (int)_damage.Value, (int)_attackDistance.Value, (int)_jumpHeight.Value, SelectedFitMode(),
                 true,
                 _adminOnly.Checked, _smashProps.Checked, _disableJumping.Checked);
             var progress = new Progress<string>(message => _status.Text = message);
