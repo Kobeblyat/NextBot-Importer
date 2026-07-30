@@ -25,6 +25,7 @@ internal sealed class MainForm : Form
     private readonly NumericUpDown _size = NumberBox(32, 1024, 128, 8);
     private readonly NumericUpDown _damage = NumberBox(1, 1_000_000, 1_000_000, 10);
     private readonly NumericUpDown _attackDistance = NumberBox(20, 500, 80, 5);
+    private readonly NumericUpDown _jumpHeight = NumberBox(0, 2000, 800, 10);
     private readonly ComboBox _imageFit = new()
     {
         DropDownStyle = ComboBoxStyle.DropDownList,
@@ -206,6 +207,8 @@ internal sealed class MainForm : Form
         Field(form, row++, 2, "画面尺寸", _size);
         Field(form, row, 0, "攻击伤害", _damage);
         Field(form, row++, 2, "攻击距离", _attackDistance);
+        Field(form, row, 0, "跳跃高度", _jumpHeight);
+        row++;
 
         var checks = new FlowLayoutPanel { Dock = DockStyle.Fill, Height = 34, Padding = new Padding(0, 5, 0, 0) };
         checks.Controls.Add(_adminOnly);
@@ -436,7 +439,7 @@ internal sealed class MainForm : Form
                 _name.Text.Trim(), _id.Text.Trim(), _category.Text.Trim(),
                 _image.Value, _chase.Value, _kill.Value, _jump.Value,
                 _output.Text.Trim(), (int)_speed.Value, (int)_size.Value,
-                (int)_damage.Value, (int)_attackDistance.Value,
+                (int)_damage.Value, (int)_attackDistance.Value, (int)_jumpHeight.Value,
                 SelectedFitMode(),
                 false,
                 _adminOnly.Checked, _smashProps.Checked, _disableJumping.Checked);
