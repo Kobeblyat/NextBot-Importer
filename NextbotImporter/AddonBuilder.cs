@@ -25,6 +25,7 @@ internal sealed record NextbotOptions(
     int SpriteSize,
     int Damage,
     int AttackDistance,
+    int JumpHeight,
     ImageFitMode ImageFit,
     bool English,
     bool AdminOnly,
@@ -281,6 +282,7 @@ if SERVER then
     local cvDamage = CreateConVar(CLASS .. "_damage", "{{o.Damage}}", FCVAR_ARCHIVE, "Nextbot attack damage")
     local cvAttackDistance = CreateConVar(CLASS .. "_attack_distance", "{{o.AttackDistance}}", FCVAR_ARCHIVE, "Nextbot attack range")
     local cvMusicDistance = CreateConVar(CLASS .. "_music_distance", "1200", FCVAR_ARCHIVE, "Chase music range")
+    local cvJumpHeight = CreateConVar(CLASS .. "_jump_height", "{{o.JumpHeight}}", FCVAR_ARCHIVE, "Nextbot jump height")
 
     util.AddNetworkString(CLASS .. "_music")
     util.AddNetworkString(CLASS .. "_oneshot")
@@ -294,9 +296,10 @@ if SERVER then
         self.loco:SetDesiredSpeed(cvSpeed:GetFloat())
         self.loco:SetAcceleration(1200)
         self.loco:SetDeceleration(800)
-{{(o.DisableJumping ? "        self.loco:SetJumpHeight(0)" : "        self.loco:SetJumpHeight(300)")}}
+{{(o.DisableJumping ? "        self.loco:SetJumpHeight(0)" : "        self.loco:SetJumpHeight(cvJumpHeight:GetInt())")}}
         self.NextAttack = 0
         self.NextMusicUpdate = 0
+        self.NextJump = 0
     end
 
     function ENT:OnInjured(dmg)
@@ -370,49 +373,90 @@ if SERVER then
     function ENT:RunBehaviour()
         while true do
             local target = self:FindTarget()
-            if IsValid(target) then
+            if not IsValid(target) then
+                coroutine.wait(0.2)
+            else
                 local path = Path("Follow")
                 path:SetMinLookAheadDistance(300)
                 path:SetGoalTolerance(20)
                 path:Compute(self, target:GetPos())
 
-                if path:IsValid() then
-                    while path:IsValid() and IsValid(target) and validTarget(target) do
+                local lastPos = self:GetPos()
+                local stuckTime = 0
+
+                while IsValid(target) and validTarget(target) do
+                    local myPos = self:GetPos()
+
+                    -- Recompute path periodically or if invalid
+                    if not path:IsValid() or path:GetAge() > 0.15 then
+                        path:Compute(self, target:GetPos())
+                    end
+
+                    if path:IsValid() then
                         path:Update(self)
-                        self:AttackNearby()
-                        self:UpdateMusic()
+                    else
+                        self.loco:Approach(target:GetPos(), 1)
+                    end
 
-                        if self.loco:IsStuck() then
-                            self:HandleStuck()
-                            return
-                        end
+                    self:AttackNearby()
+                    self:UpdateMusic()
 
+                    -- Jump toward target when target is above
+                    local dz = target:GetPos().z - myPos.z
 {{(o.DisableJumping ? "" : """
-                        if target:GetPos().z - self:GetPos().z > 60 and self:IsOnGround() then
-                            self.loco:Jump()
-                            if JUMP_SOUND then
-                                self:EmitSound(JUMP_SOUND, 90, 100)
-                                net.Start(CLASS .. "_oneshot")
-                                    net.WriteUInt(2, 2)
-                                net.Broadcast()
-                            end
+                    if dz > 64 and CurTime() > self.NextJump then
+                        self.loco:Jump()
+                        self.NextJump = CurTime() + 1.0
+                        local toTarget = (target:GetPos() - myPos):GetNormalized()
+                        self:SetVelocity(toTarget * 400 + Vector(0, 0, 200))
+                        if JUMP_SOUND then
+                            self:EmitSound(JUMP_SOUND, 90, 100)
+                            net.Start(CLASS .. "_oneshot")
+                                net.WriteUInt(2, 2)
+                            net.Broadcast()
                         end
+                    end
 """)}}
 
-                        if path:GetAge() > 0.12 then path:Compute(self, target:GetPos()) end
-                        coroutine.yield()
+                    -- Stuck detection
+                    if myPos:DistToSqr(lastPos) < 100 then
+                        stuckTime = stuckTime + 0.05
+                        if stuckTime > 2.0 then
+                            local tpPos = target:GetPos() + Vector(0, 0, 32)
+                            local tr = util.TraceLine({start = tpPos + Vector(0, 0, 2000), endpos = tpPos - Vector(0, 0, 100), filter = self})
+                            if tr.Hit then
+                                self:SetPos(tr.HitPos + Vector(0, 0, 36))
+                            else
+                                self:SetPos(tpPos)
+                            end
+                            self.loco:ClearStuck()
+                            stuckTime = 0
+                        end
+                    else
+                        stuckTime = 0
+                        lastPos = myPos
                     end
+
+                    if self.loco:IsStuck() then
+                        self.loco:Jump()
+                        self.loco:ClearStuck()
+                        stuckTime = 0
+                    end
+
+                    coroutine.yield()
                 end
-            else
-                coroutine.wait(0.2)
             end
             coroutine.yield()
         end
     end
 
     function ENT:HandleStuck()
-        self:SetPos(self:GetPos() + Vector(0, 0, 24))
-        self.loco:ClearStuck()
+        self.loco:Jump()
+        coroutine.wait(0.5)
+        if self.loco:IsStuck() then
+            self:SetPos(self:GetPos() + Vector(0, 0, 300))
+            self.loco:ClearStuck()
+        end
     end
 else
     local FRAME_COUNT = {{frameDelays.Count}}
@@ -555,6 +599,7 @@ Console variables:
 {className}_damage
 {className}_attack_distance
 {className}_music_distance
+{className}_jump_height
 """ : $"""
 {o.DisplayName} Nextbot
 ========================
@@ -578,5 +623,6 @@ Console variables:
 {className}_damage
 {className}_attack_distance
 {className}_music_distance
+{className}_jump_height
 """;
 }
