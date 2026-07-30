@@ -372,78 +372,75 @@ if SERVER then
 
     function ENT:RunBehaviour()
         while true do
-            local target = self:FindTarget()
-            if not IsValid(target) then
-                coroutine.wait(0.2)
+            if GetConVar("ai_disabled"):GetBool() then
+                coroutine.wait(0.5)
+                coroutine.yield()
             else
-                local path = Path("Follow")
-                path:SetMinLookAheadDistance(300)
-                path:SetGoalTolerance(20)
-                path:Compute(self, target:GetPos())
+                local target = self:FindTarget()
+                if not IsValid(target) then
+                    coroutine.wait(0.2)
+                else
+                    local path = Path("Follow")
+                    path:SetMinLookAheadDistance(300)
+                    path:SetGoalTolerance(20)
+                    path:Compute(self, target:GetPos())
 
-                local lastPos = self:GetPos()
-                local stuckTime = 0
+                    local lastPos = self:GetPos()
+                    local stuckSince = CurTime()
 
-                while IsValid(target) and validTarget(target) do
-                    local myPos = self:GetPos()
+                    while IsValid(target) and validTarget(target) and not GetConVar("ai_disabled"):GetBool() do
+                        local myPos = self:GetPos()
 
-                    -- Recompute path periodically or if invalid
-                    if not path:IsValid() or path:GetAge() > 0.15 then
-                        path:Compute(self, target:GetPos())
-                    end
-
-                    if path:IsValid() then
-                        path:Update(self)
-                    else
-                        self.loco:Approach(target:GetPos(), 1)
-                    end
-
-                    self:AttackNearby()
-                    self:UpdateMusic()
-
-                    -- Jump toward target when target is above
-                    local dz = target:GetPos().z - myPos.z
-{{(o.DisableJumping ? "" : """
-                    if dz > 64 and CurTime() > self.NextJump then
-                        self.loco:Jump()
-                        self.NextJump = CurTime() + 1.0
-                        local toTarget = (target:GetPos() - myPos):GetNormalized()
-                        self:SetVelocity(toTarget * 400 + Vector(0, 0, 200))
-                        if JUMP_SOUND then
-                            self:EmitSound(JUMP_SOUND, 90, 100)
-                            net.Start(CLASS .. "_oneshot")
-                                net.WriteUInt(2, 2)
-                            net.Broadcast()
+                        if not path:IsValid() or path:GetAge() > 0.15 then
+                            path:Compute(self, target:GetPos())
                         end
-                    end
+
+                        if path:IsValid() then
+                            path:Update(self)
+                        end
+
+                        self:AttackNearby()
+                        self:UpdateMusic()
+
+                        -- Jump toward target when target is above
+                        local dz = target:GetPos().z - myPos.z
+{{(o.DisableJumping ? "" : """
+                        if dz > 64 and CurTime() > self.NextJump then
+                            self.loco:Jump()
+                            self.NextJump = CurTime() + 1.0
+                            local toTarget = (target:GetPos() - myPos):GetNormalized()
+                            self:SetVelocity(toTarget * 400 + Vector(0, 0, 200))
+                            if JUMP_SOUND then
+                                self:EmitSound(JUMP_SOUND, 90, 100)
+                                net.Start(CLASS .. "_oneshot")
+                                    net.WriteUInt(2, 2)
+                                net.Broadcast()
+                            end
+                        end
 """)}}
 
-                    -- Stuck detection
-                    if myPos:DistToSqr(lastPos) < 100 then
-                        stuckTime = stuckTime + 0.05
-                        if stuckTime > 2.0 then
-                            local tpPos = target:GetPos() + Vector(0, 0, 32)
-                            local tr = util.TraceLine({start = tpPos + Vector(0, 0, 2000), endpos = tpPos - Vector(0, 0, 100), filter = self})
-                            if tr.Hit then
-                                self:SetPos(tr.HitPos + Vector(0, 0, 36))
-                            else
-                                self:SetPos(tpPos)
+                        -- Stuck detection using real time
+                        if myPos:DistToSqr(lastPos) < 25 then
+                            if CurTime() - stuckSince > 2.0 then
+                                self.loco:Jump()
+                                local randomDir = Vector(math.random(-100, 100), math.random(-100, 100), 100)
+                                self:SetVelocity(randomDir)
+                                self.loco:ClearStuck()
+                                stuckSince = CurTime()
                             end
-                            self.loco:ClearStuck()
-                            stuckTime = 0
+                        else
+                            stuckSince = CurTime()
+                            lastPos = myPos
                         end
-                    else
-                        stuckTime = 0
-                        lastPos = myPos
-                    end
 
-                    if self.loco:IsStuck() then
-                        self.loco:Jump()
-                        self.loco:ClearStuck()
-                        stuckTime = 0
-                    end
+                        if self.loco:IsStuck() then
+                            self.loco:Jump()
+                            self.loco:ClearStuck()
+                            stuckSince = CurTime()
+                        end
 
-                    coroutine.yield()
+                        coroutine.yield()
+                    end
                 end
             end
             coroutine.yield()
