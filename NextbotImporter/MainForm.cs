@@ -57,8 +57,9 @@ internal sealed class MainForm : Form
         _switchLanguage = switchLanguage;
         Text = "Garry's Mod游戏NextBot导入器--Kobeblyat制作";
         StartPosition = FormStartPosition.CenterScreen;
+        var screen = Screen.PrimaryScreen!.WorkingArea;
         MinimumSize = new Size(1100, 780);
-        Size = new Size(1320, 900);
+        Size = new Size((int)(screen.Width * 0.75), (int)(screen.Height * 0.85));
         Font = new Font("Microsoft YaHei UI", 9F);
         BackColor = Pale;
         ForeColor = Navy;
@@ -184,9 +185,9 @@ internal sealed class MainForm : Form
         var card = Card();
         var scroll = new Panel { Dock = DockStyle.Fill, AutoScroll = true, Padding = new Padding(22, 14, 22, 20) };
         var form = new TableLayoutPanel { Dock = DockStyle.Top, AutoSize = true, ColumnCount = 4 };
-        form.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 132));
+        form.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 155));
         form.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
-        form.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 132));
+        form.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 155));
         form.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
 
         int row = 0;
@@ -210,11 +211,12 @@ internal sealed class MainForm : Form
         Field(form, row, 0, "跳跃高度", _jumpHeight);
         row++;
 
-        var checks = new FlowLayoutPanel { Dock = DockStyle.Fill, Height = 34, Padding = new Padding(0, 5, 0, 0) };
+        var checks = new FlowLayoutPanel { Dock = DockStyle.Fill, AutoSize = true, FlowDirection = FlowDirection.TopDown, Padding = new Padding(0, 5, 0, 0), MinimumSize = new Size(0, 72) };
         checks.Controls.Add(_adminOnly);
         checks.Controls.Add(_smashProps);
         checks.Controls.Add(_disableJumping);
         WideField(form, ref row, "行为选项", checks);
+        form.RowStyles[row - 1] = new RowStyle(SizeType.Absolute, 80);
 
         Section(form, ref row, "04  导出");
         var browse = SecondaryButton("浏览…");
