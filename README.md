@@ -15,12 +15,17 @@ them directly to `GarrysMod/garrysmod/addons`.
 - Automatically selects the initial language from the Windows display language
 - Runtime language switching
 - Remembers the selected language for the next launch
+- Bilibili author link and GitHub Star button
 - Custom in-app responsible-use notice
 - PNG, GIF, JPG/JPEG, BMP, and TIF/TIFF input
 - Preserves GIF animation frames and timing
 - Fit-entire-image and fill/crop modes
 - MP3/WAV chase, death, and jump audio
 - Custom NPC spawn-menu categories
+- Option to disable NextBot jumping
+- Admin-only spawning toggle
+- Smash physics props toggle
+- Generates Lua, spawn icon, `addon.json`, and addon instructions
 - Self-contained Windows x64 build
 
 ## Requirements
@@ -32,6 +37,7 @@ them directly to `GarrysMod/garrysmod/addons`.
 
 ```text
 NextbotImporter/        Application and addon generation code
+NextbotImporter.Tests/  End-to-end addon generation test
 iconimage.ico           Application icon
 ```
 
@@ -58,6 +64,19 @@ dotnet publish .\NextbotImporter\NextbotImporter.csproj `
 
 NextBots require a Nav Mesh. If a map does not have one, run `nav_generate` in
 the game console. Generation can take a long time and may restart the map.
+
+## Console variables
+
+Each generated NextBot exposes the following ConVars (replace `{id}` with the
+actual internal ID):
+
+| ConVar | Description | Default |
+|---|---|---|
+| `npc_{id}_speed` | Movement speed | 500 |
+| `npc_{id}_damage` | Attack damage | 1000000 |
+| `npc_{id}_attack_distance` | Attack range | 80 |
+| `npc_{id}_music_distance` | Chase music range | 1200 |
+| `npc_{id}_jump_height` | Jump height | 800 |
 
 ## Author
 
